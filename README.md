@@ -19,14 +19,14 @@ FileFinder is a smart file explorer with a chatbot-style interface that allows u
 - pytesseract
 - sentence_transformers
 - os
-- 
+  
 ### Example quires 
 - Find my documets
 - where is my name.pfd file
 - can you find my _____ file/document
-- 
-###Contributing
-Contributions are welcome! Please fork this repository, make your changes, and submit a pull request.
+  
+### Contributing
+- Contributions are welcome! Please fork this repository, make your changes, and submit a pull request.
 
 ## Roadmap
 - **Improved AI Interaction**: Integrate advanced NLP models to enhance understanding.
