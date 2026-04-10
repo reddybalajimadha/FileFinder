@@ -1,13 +1,18 @@
-# Core - Transformer model for semantic search
-sentence-transformers>=2.2.0
-torch>=1.9.0
+# Core - no extra dependencies needed for basic search!
+# SQLite with FTS5 is built into Python 3.
 
-# PDF extraction - native text (fast, preferred)
+# PDF extraction - native text (fast, recommended)
 pdfplumber>=0.9.0
 
-# PDF extraction - OCR fallback (for scanned PDFs)
+# PDF extraction - OCR fallback (optional, for scanned PDFs)
+# Also requires system packages: tesseract-ocr, poppler-utils
 pytesseract>=0.3.10
 pdf2image>=1.16.0
 
 # DOCX support (optional)
 python-docx>=0.8.11
+
+# Semantic search - optional, only needed for --semantic flag
+# These are large downloads (~500MB), skip if you only need keyword search
+sentence-transformers>=2.2.0
+torch>=1.9.0

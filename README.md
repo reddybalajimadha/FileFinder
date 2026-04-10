@@ -1,69 +1,106 @@
 # FileFinder
 
-FileFinder is a smart file search tool that uses **transformer-based semantic matching** to find files using natural language queries. Instead of searching by exact filenames, you describe what you're looking for and FileFinder finds the most relevant documents.
+An AI-powered file search agent that lets you find files using natural language. Works like a smart file manager - indexes your files once, then answers queries instantly.
 
-## Features
+## How It Works
 
-- **Semantic Search**: Uses sentence-transformers (`all-MiniLM-L6-v2`) to understand the meaning of your query and match it against document contents.
-- **Smart PDF Extraction**: Tries fast native text extraction (pdfplumber) first, falls back to OCR (pytesseract) for scanned PDFs.
-- **Multi-Format Support**: Searches across PDF, TXT, and DOCX files.
-- **Embedding Cache**: Caches computed embeddings to disk so subsequent searches are instant (no re-indexing unless files change).
-- **Top-K Results**: Returns multiple ranked results with similarity scores instead of just one match.
-- **Interactive Mode**: Run multiple queries without re-indexing each time.
-- **CLI Interface**: Full command-line interface with configurable options.
+FileFinder uses a **tiered search architecture** so you get results fast:
+
+| Tier | What | Speed | How |
+|------|------|-------|-----|
+| **Tier 1** | Filenames, paths, sizes, dates | **Instant** (seconds to index) | SQLite + FTS5 |
+| **Tier 2** | Document content (PDF text, code, docs) | **Background** (auto-extracts) | SQLite FTS5 |
+| **Tier 3** | Semantic/meaning search | **On-demand** (needs `--semantic`) | Transformer embeddings |
+
+You can start searching **immediately** after the Tier 1 scan completes. Content extraction runs in the background.
+
+## Security
+
+FileFinder automatically skips sensitive directories and files:
+- `.ssh`, `.gnupg`, `.aws`, `.kube`, `.docker` (credentials)
+- `.env` files, private keys, tokens (secrets)
+- Browser profiles (cookies, passwords)
+- Everything stays **100% local** - no data is sent anywhere
 
 ## Installation
 
-**Requirements:** Python 3.8+
-
+**Minimum (keyword search only - no extra dependencies!):**
 ```bash
-pip install -r requirements.txt
+# SQLite FTS5 is built into Python 3.8+, so basic search just works
+git clone https://github.com/reddybalajimadha/FileFinder.git
+cd FileFinder
 ```
 
-For OCR support (scanned PDFs), you also need Tesseract installed:
+**Full (PDF extraction + semantic search):**
 ```bash
+pip install -r requirements.txt
+
+# For OCR support (scanned PDFs):
 # Ubuntu/Debian
 sudo apt-get install tesseract-ocr poppler-utils
-
 # macOS
 brew install tesseract poppler
 ```
 
 ## Usage
 
+### Interactive Mode (recommended)
+```bash
+python -m filefinder ~/Documents
+```
+
+This gives you an interactive prompt:
+```
+Indexed 4,521 files.
+Content extraction running in background...
+
+FileFinder Agent - Interactive Mode
+========================================
+Commands:
+  <query>          Search for files
+  open <number>    Open a file from last results
+  reveal <number>  Show file in file manager
+  stats            Show index statistics
+  semantic <query> Use AI semantic search
+  type <ext>       Find files by extension
+  quit             Exit
+
+FileFinder> find my resume
+Results for "find my resume":
+
+  [1] Resume_2024.pdf                        245KB [content matched]
+      /home/user/Documents/Resume_2024.pdf
+  [2] resume_draft.docx                       52KB [name matched]
+      /home/user/Documents/drafts/resume_draft.docx
+
+  2 results. Use 'open <number>' or 'reveal <number>'.
+
+FileFinder> open 1
+Opening: /home/user/Documents/Resume_2024.pdf
+```
+
 ### Single Query
 ```bash
-python -m filefinder /path/to/documents "find my assignment"
+python -m filefinder ~/Documents "budget report"
 ```
 
-### Interactive Mode (multiple queries, index once)
+### Semantic Search (AI-powered)
 ```bash
-python -m filefinder /path/to/documents --interactive
+python -m filefinder ~/Documents "that paper about neural networks" --semantic
 ```
 
-### Options
-```
-python -m filefinder --help
-
-positional arguments:
-  directory             Directory to scan for files
-  query                 Natural language search query
-
-options:
-  --top-k N             Number of results to return (default: 5)
-  --threshold SCORE     Minimum similarity score 0.0-1.0 (default: 0.0)
-  --model MODEL         Sentence-transformer model name
-  --page-limit N        Max PDF pages to extract per file (default: 5)
-  --reindex             Force reindexing, ignoring cache
-  --interactive         Enter interactive search mode
-  --verbose             Enable debug logging
-```
-
-### Example Queries
+### Find by File Type
 ```bash
-python -m filefinder ~/Documents "where is my resume"
-python -m filefinder ~/Documents "machine learning homework" --top-k 10
-python -m filefinder /data "invoice from march" --threshold 0.3
+python -m filefinder ~/Documents --type pdf
+```
+
+### Other Options
+```
+--limit N       Max results (default: 10)
+--stats         Show index statistics
+--no-content    Skip content extraction (fast metadata-only mode)
+--reindex       Force full reindex
+--verbose       Debug logging
 ```
 
 ## Project Structure
@@ -71,35 +108,33 @@ python -m filefinder /data "invoice from march" --threshold 0.3
 ```
 FileFinder/
 ├── filefinder/
-│   ├── __init__.py       # Package init
-│   ├── __main__.py       # python -m entry point
-│   ├── cli.py            # Command-line interface
-│   ├── extractor.py      # Text extraction (PDF, TXT, DOCX)
-│   ├── indexer.py         # Embedding computation + caching
-│   └── searcher.py        # Search engine class
-├── Test_tranformer_Search.py  # Original prototype script
+│   ├── __init__.py     # Package version
+│   ├── __main__.py     # python -m entry point
+│   ├── agent.py        # Brain: orchestrates indexing + search + file ops
+│   ├── cli.py          # Interactive CLI
+│   ├── extractor.py    # Tiered text extraction (PDF, DOCX, TXT, code...)
+│   ├── scanner.py      # Filesystem walker with security exclusions
+│   └── store.py        # SQLite + FTS5 storage layer
+├── Test_tranformer_Search.py  # Original prototype
 ├── requirements.txt
 └── README.md
 ```
 
-## How It Works
+## Supported File Types
 
-1. **Scan** - Recursively finds all supported files (PDF, TXT, DOCX) in the target directory.
-2. **Extract** - Pulls text from each file. For PDFs, uses pdfplumber for native text extraction; falls back to OCR (pytesseract) for scanned documents.
-3. **Encode** - Converts extracted text into vector embeddings using a sentence-transformer model. Results are cached to disk.
-4. **Search** - Encodes your query into an embedding and compares it against all document embeddings using cosine similarity. Returns the top-K most relevant files.
+**Content extraction (Tier 2):**
+- Documents: PDF, DOCX, TXT, MD, RST, CSV
+- Code: Python, JavaScript, TypeScript, Java, C/C++, Go, Rust, Ruby, PHP, SQL, Shell
+- Config: JSON, XML, YAML, TOML, INI, HTML
+- All other files are still searchable by filename/metadata (Tier 1)
 
 ## Roadmap
-- Fine-tuning transformer models for better file-specific matching
+- File system watcher for live index updates (watchdog)
+- Web UI / Electron desktop app
 - Voice command support
-- Support for more file types (PPTX, XLSX, images with OCR)
-- Web UI / desktop app interface
-- Cross-platform packaging
+- PPTX, XLSX extraction
+- Image OCR (find text in screenshots)
+- Cross-platform installer
 
 ## Contributing
-Contributions are welcome! Please fork this repository, make your changes, and submit a pull request.
-
-## Acknowledgments
-- [Sentence Transformers](https://www.sbert.net/) for the embedding models
-- [pdfplumber](https://github.com/jsvine/pdfplumber) for PDF text extraction
-- The open-source community for providing the tools and libraries used in this project
+Contributions are welcome! Fork this repository, make your changes, and submit a pull request.

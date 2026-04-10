@@ -1,3 +1,3 @@
-"""FileFinder - Smart file search using transformer-based semantic matching."""
+"""FileFinder - AI-powered file search agent."""
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
