@@ -1,0 +1,13 @@
+# Core - Transformer model for semantic search
+sentence-transformers>=2.2.0
+torch>=1.9.0
+
+# PDF extraction - native text (fast, preferred)
+pdfplumber>=0.9.0
+
+# PDF extraction - OCR fallback (for scanned PDFs)
+pytesseract>=0.3.10
+pdf2image>=1.16.0
+
+# DOCX support (optional)
+python-docx>=0.8.11
