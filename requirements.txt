@@ -1,18 +1,24 @@
-# Core - no extra dependencies needed for basic search!
-# SQLite with FTS5 is built into Python 3.
+# === Core search (no extra deps - SQLite is built into Python) ===
 
-# PDF extraction - native text (fast, recommended)
-pdfplumber>=0.9.0
+# === Desktop application ===
+pywebview>=4.0           # Native window wrapper
+fastapi>=0.100.0          # Web API framework
+uvicorn>=0.23.0           # ASGI server
+pydantic>=2.0             # Request/response models
 
-# PDF extraction - OCR fallback (optional, for scanned PDFs)
+# === Document text extraction ===
+pdfplumber>=0.9.0         # Native PDF text (fast, preferred)
+python-docx>=0.8.11       # DOCX support
+
+# === Optional: OCR for scanned PDFs ===
 # Also requires system packages: tesseract-ocr, poppler-utils
 pytesseract>=0.3.10
 pdf2image>=1.16.0
 
-# DOCX support (optional)
-python-docx>=0.8.11
-
-# Semantic search - optional, only needed for --semantic flag
-# These are large downloads (~500MB), skip if you only need keyword search
+# === Optional: AI semantic search ===
+# Large downloads (~500MB+). Only needed for --semantic flag.
 sentence-transformers>=2.2.0
 torch>=1.9.0
+
+# === Optional: Building Windows .exe ===
+pyinstaller>=5.0          # For creating standalone .exe

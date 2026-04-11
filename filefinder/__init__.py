@@ -1,3 +1,3 @@
-"""FileFinder - AI-powered file search agent."""
+"""FileFinder - AI-powered file search desktop application."""
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FileFinder</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header class="topbar">
+        <div class="brand">
+            <span class="brand-icon">[FF]</span>
+            <span class="brand-name">FileFinder</span>
+        </div>
+        <div class="search-container">
+            <input
+                type="text"
+                id="search-input"
+                placeholder="Search files by name or content..."
+                autocomplete="off"
+                disabled
+            >
+            <label class="semantic-toggle">
+                <input type="checkbox" id="semantic-toggle">
+                <span>AI Search</span>
+            </label>
+        </div>
+        <div class="header-actions">
+            <button id="pick-folder-btn" class="btn btn-primary">Select Folder</button>
+            <button id="stats-btn" class="btn btn-ghost" title="Show statistics">Stats</button>
+        </div>
+    </header>
+
+    <main>
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <h3>Current Folder</h3>
+                <div id="current-folder" class="current-folder">No folder selected</div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>File Types</h3>
+                <div class="type-filters">
+                    <button class="type-filter" data-ext="pdf">PDF</button>
+                    <button class="type-filter" data-ext="docx">DOCX</button>
+                    <button class="type-filter" data-ext="txt">TXT</button>
+                    <button class="type-filter" data-ext="md">Markdown</button>
+                    <button class="type-filter" data-ext="py">Python</button>
+                    <button class="type-filter" data-ext="js">JavaScript</button>
+                </div>
+            </div>
+
+            <div class="sidebar-section" id="stats-section" style="display:none">
+                <h3>Index Stats</h3>
+                <div id="stats-content" class="stats"></div>
+            </div>
+        </aside>
+
+        <section class="results-area">
+            <div id="status-bar" class="status-bar">
+                Welcome! Select a folder to begin.
+            </div>
+
+            <div id="results" class="results">
+                <div class="empty-state">
+                    <div class="empty-icon">[?]</div>
+                    <h2>Ready to search</h2>
+                    <p>Click <strong>Select Folder</strong> above to index a directory.</p>
+                    <p class="hint">Your files stay local. Nothing is sent anywhere.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="toast" class="toast"></div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
